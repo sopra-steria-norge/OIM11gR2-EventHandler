@@ -3,16 +3,13 @@ package no.steria.tad;
 import java.util.Locale;
 import java.util.Map;
 
+import oracle.iam.identity.exception.UserNameGenerationException;
+import oracle.iam.identity.usermgmt.api.UserNamePolicy;
+import oracle.iam.platform.Platform;
 import Thor.API.Exceptions.tcAPIException;
 import Thor.API.Exceptions.tcColumnNotFoundException;
 import Thor.API.Exceptions.tcInvalidLookupException;
 import Thor.API.Operations.tcLookupOperationsIntf;
-import Thor.API.Operations.tcUserOperationsIntf;
-
-import oracle.iam.identity.exception.UserNameGenerationException;
-import oracle.iam.identity.usermgmt.api.UserNamePolicy;
-import oracle.iam.platform.OIMClient;
-import oracle.iam.platform.Platform;
 
 public class TadUsernamePolicy implements UserNamePolicy {
 
@@ -41,24 +38,32 @@ public class TadUsernamePolicy implements UserNamePolicy {
 				length = 2;
 			sb.append(lastName.substring(0, length));
 		}
+		String username = sb.toString().toUpperCase();
 		tcLookupOperationsIntf lookupTypeService =  Platform.getService(tcLookupOperationsIntf.class);
 		try {
 			Thor.API.tcResultSet rs = lookupTypeService.getLookupValues("Lookup.TAD.ImproperUserNames");
 			int rowCount = rs.getTotalRowCount();
 			for (int i = 0; i < rowCount; i++) {
+				rs.goToRow(i);
 				String code = rs.getStringValueFromColumn(2);
-				if (code != null && code.equals(sb.toString().toUpperCase())) {
-					return "Generert brukernavn ikke passende. Skriv inn manuelt.";
+				if (code != null && code.toUpperCase().equals(username)) {
+					return "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.";
 				}
 			} 
 		} catch (tcAPIException e) {
-			return "Generert brukernavn ikke passende. Skriv inn manuelt.";
+			return "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.";
 		} catch (tcInvalidLookupException e) {
-			return "Generert brukernavn ikke passende. Skriv inn manuelt.";
+			return "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.";
 		} catch (tcColumnNotFoundException e) {
-			return "Generert brukernavn ikke passende. Skriv inn manuelt.";
+			return "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.";
 		}
-		return sb.toString();
+		if (username.indexOf('Å') >= 0)
+			username = username.replaceAll("Å", "A");
+		if (username.indexOf('Ø') >= 0)
+			username = username.replaceAll("Ø", "O");
+		if (username.indexOf('Æ') >= 0)
+			username = username.replaceAll("Æ", "E");
+		return "IAM"+username;
 	}
 /*
 	

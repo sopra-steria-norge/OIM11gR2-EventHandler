@@ -11,31 +11,36 @@ import oracle.iam.platformservice.api.PlatformService;
 
 public class PluginDeploy {
 	public static OIMClient client;
-	private static String OIMUserName = "xelsysadm";
-	private static String OIMPassword = "Steria2012";
-	private static String OIMURL = "t3://192.168.137.100:14000";
 	private static String OIMInitialContextFactory = "weblogic.jndi.WLInitialContextFactory";
 
-	public static void loginWithCustomEnv() throws LoginException {
+	public static void loginWithCustomEnv(String OIMURL,String username,String password) throws LoginException {
 		System.setProperty("java.security.auth.login.config", "file:authwl.conf");
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(OIMClient.JAVA_NAMING_FACTORY_INITIAL, OIMInitialContextFactory);
 		env.put(OIMClient.JAVA_NAMING_PROVIDER_URL, OIMURL);
 		client = new OIMClient(env);
-		client.login(OIMUserName, OIMPassword.toCharArray());
+		System.out.println(username+':'+password);
+		client.login(username, password.toCharArray());
 	}
 
 	public static void main(String[] args) throws Exception {
-		// TODO Auto-generated method stub
-		if (args.length < 2) {
-			System.err.println("java PluginDeploy register <Plugin.zip>");
-			System.err.println("java PluginDeploy unregister <Plugin.zip> <PluginClassName> <version>");			
+		if (args.length < 5) {
+			System.err.println("java PluginDeploy register <OIM_SERVER> <Plugin.zip> <username> <password>");
+			System.err.println("java PluginDeploy unregister <OIM_SERVER> <PluginClassName> <version>  <username> <password>");			
 			System.exit(1);
 		}
-		loginWithCustomEnv();
+		String username  = args[3];
+		String password = args[4];
+		if (args.length == 6) {
+			username = password;
+			password = args[5];
+		}
+		String OIMSERVER = args[1];
+
+		loginWithCustomEnv("t3://"+OIMSERVER+":14000",username,password);
 		PlatformService service = client.getService(PlatformService.class);
 		if (args[0].equals("register")) {
-			String fileName = args[1];
+			String fileName = args[2];
 			File zipFile = new File(fileName);
 			FileInputStream fis = new FileInputStream(zipFile);
 			int size = (int) zipFile.length();
@@ -49,8 +54,8 @@ public class PluginDeploy {
 			service.registerPlugin(b);
 		}
 		else {
-			String className = args[1];
-			String version = args[2];
+			String className = args[3];
+			String version = args[4];
 			service.unRegisterPlugin(className,version);
 		}
 	}

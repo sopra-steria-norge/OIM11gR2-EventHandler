@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oimplugins xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">  
+<plugins pluginpoint="oracle.iam.identity.usermgmt.api.UserNamePolicy">  
+<plugin 
+pluginclass="no.steria.tad.TadUsernamePolicy9" 
+version="1.9.3" name="TadUsernamePolicy9"/>
+</plugins>  
+</oimplugins>
+

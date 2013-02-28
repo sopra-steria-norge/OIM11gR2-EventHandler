@@ -13,7 +13,7 @@ import oracle.iam.platform.kernel.vo.Orchestration;
 public class NoChangeUserNameValidation implements ValidationHandler {
 
 	public static void main(String args[]) {
-		System.out.println("KÅKÅ".replaceAll("Å", "A"));
+		System.out.println("KÅKÅ".replace('Å', 'A'));
 	}
 	@Override
 	public void initialize(HashMap<String, String> arg0) {

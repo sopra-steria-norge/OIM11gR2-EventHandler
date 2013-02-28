@@ -57,13 +57,7 @@ public class TadUsernamePolicy implements UserNamePolicy {
 		} catch (tcColumnNotFoundException e) {
 			return "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.";
 		}
-		if (username.indexOf('Å') >= 0)
-			username = username.replaceAll("Å", "A");
-		if (username.indexOf('Ø') >= 0)
-			username = username.replaceAll("Ø", "O");
-		if (username.indexOf('Æ') >= 0)
-			username = username.replaceAll("Æ", "E");
-		return "IAM"+username;
+		return "IAM"+username.replace('Å', 'A').replace('Ø', 'O').replace('Æ', 'E');
 	}
 /*
 	

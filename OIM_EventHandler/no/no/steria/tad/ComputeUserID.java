@@ -64,10 +64,10 @@ public class ComputeUserID implements PreProcessHandler{
 				Map<String,String> lookupValues = new HashMap<String,String>();
 				lookupValues.put("Lookup Definition.Lookup Code Information.Decode",newValue);
 				lookupTypeService.updateLookupValue("Lookup.TAD.AIX_UID", "COUNTER", lookupValues);
-				//orchestration.addParameter("USR_AIX_UID", value);
+				orchestration.addParameter("USR_AIX_UID", value);
 				char pwdArray[] = RandomPasswordGenerator.generatePswd(minLen, maxLen,
 	                    noOfCAPSAlpha, noOfDigits, noOfSplChars);
-				orchestration.addParameter("usr_aix_passwd", new String(pwdArray));
+				orchestration.addParameter("USR_AIX_PASSWD", new String(pwdArray));
 				if (getParameterValue(parameters,"Password Generated") == null) {
 					return new EventResult();
 				}

@@ -68,9 +68,11 @@ public class ComputeUserID implements PreProcessHandler{
 				char pwdArray[] = RandomPasswordGenerator.generatePswd(minLen, maxLen,
 	                    noOfCAPSAlpha, noOfDigits, noOfSplChars);
 				orchestration.addParameter("USR_AIX_PASSWD", new String(pwdArray));
+				/*
 				if (getParameterValue(parameters,"Password Generated") == null) {
 					return new EventResult();
 				}
+				*/
 				String encryptedPassword = CryptoUtil.getEncryptedPassword(pwdArray, null);
 				orchestration.addParameter(UserManagerConstants.AttributeName.PASSWORD.getId(), encryptedPassword);
 			}	

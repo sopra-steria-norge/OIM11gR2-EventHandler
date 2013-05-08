@@ -53,7 +53,7 @@ public class ComputeUserID implements PreProcessHandler{
 	public EventResult execute(long processId, long eventId, Orchestration orchestration) {
 		try {
 			tcLookupOperationsIntf lookupTypeService =  Platform.getService(tcLookupOperationsIntf.class);
-			HashMap<String,Serializable> parameters = orchestration.getParameters();
+			//HashMap<String,Serializable> parameters = orchestration.getParameters();
 
 			Thor.API.tcResultSet rs = lookupTypeService.getLookupValues("Lookup.TAD.AIX_UID");
 			int rowCount = rs.getTotalRowCount();
@@ -64,30 +64,31 @@ public class ComputeUserID implements PreProcessHandler{
 				Map<String,String> lookupValues = new HashMap<String,String>();
 				lookupValues.put("Lookup Definition.Lookup Code Information.Decode",newValue);
 				lookupTypeService.updateLookupValue("Lookup.TAD.AIX_UID", "COUNTER", lookupValues);
-				orchestration.addParameter("USR_AIX_UID", value);
 				char pwdArray[] = RandomPasswordGenerator.generatePswd(minLen, maxLen,
 	                    noOfCAPSAlpha, noOfDigits, noOfSplChars);
-				orchestration.addParameter("USR_AIX_PASSWD", new String(pwdArray));
-				/*
-				if (getParameterValue(parameters,"Password Generated") == null) {
-					return new EventResult();
-				}
-				*/
 				String encryptedPassword = CryptoUtil.getEncryptedPassword(pwdArray, null);
+				orchestration.addParameter("usr_aix_uid", value);
+				orchestration.addParameter("usr_aix_passwd", encryptedPassword);
 				orchestration.addParameter(UserManagerConstants.AttributeName.PASSWORD.getId(), encryptedPassword);
 			}	
 		} catch (tcAPIException e) {
-			orchestration.addParameter("Middle Name", "ABC"+e.isMessage);
+			e.printStackTrace();
+			//orchestration.addParameter("Middle Name", "ABC"+e.isMessage);
 		} catch (tcInvalidLookupException e) {
-			orchestration.addParameter("Middle Name", "DEF");
+			e.printStackTrace();
+			//orchestration.addParameter("Middle Name", "DEF");
 		} catch (tcColumnNotFoundException e) {
-			orchestration.addParameter("Middle Name", "GHI");
+			e.printStackTrace();
+			//orchestration.addParameter("Middle Name", "GHI");
 		} catch (tcInvalidValueException e) {
-			orchestration.addParameter("Middle Name", "QPR");
+			e.printStackTrace();
+			//orchestration.addParameter("Middle Name", "QPR");
 		} catch (tcInvalidAttributeException e) {
-			orchestration.addParameter("Middle Name", "STU"+e.isMessage+"::"+e.getMessage());
+			e.printStackTrace();
+			//orchestration.addParameter("Middle Name", "STU"+e.isMessage+"::"+e.getMessage());
 		} catch (Throwable e) {
-			orchestration.addParameter("Middle Name", "XYZ"+e.getMessage());
+			e.printStackTrace();
+			//orchestration.addParameter("Middle Name", "XYZ"+e.getMessage());
 		}
 		return new EventResult();
 	}

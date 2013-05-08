@@ -15,6 +15,7 @@ public class PluginDeploy {
 
 	public static void loginWithCustomEnv(String OIMURL,String username,String password) throws LoginException {
 		System.setProperty("java.security.auth.login.config", "file:authwl.conf");
+		System.setProperty("APPSERVER_TYPE", "wls");
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(OIMClient.JAVA_NAMING_FACTORY_INITIAL, OIMInitialContextFactory);
 		env.put(OIMClient.JAVA_NAMING_PROVIDER_URL, OIMURL);
@@ -54,9 +55,13 @@ public class PluginDeploy {
 			service.registerPlugin(b);
 		}
 		else {
-			String className = args[3];
-			String version = args[4];
+			String className = args[2];
+			String version = args[3];
+			System.out.println(className);
+			System.out.println(version);
+			//System.exit(0);
 			service.unRegisterPlugin(className,version);
+			System.out.println(version);
 		}
 	}
 }

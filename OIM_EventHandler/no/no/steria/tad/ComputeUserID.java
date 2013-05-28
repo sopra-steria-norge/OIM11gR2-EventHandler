@@ -52,43 +52,40 @@ public class ComputeUserID implements PreProcessHandler{
 	@Override
 	public EventResult execute(long processId, long eventId, Orchestration orchestration) {
 		try {
+			HashMap<String, ?> m = orchestration.getParameters();
+			boolean passwordSubmitted = m.containsKey(UserManagerConstants.AttributeName.PASSWORD.getId());
+			boolean aix_uid_submitted = m.containsKey("usr_aix_uid");
 			tcLookupOperationsIntf lookupTypeService =  Platform.getService(tcLookupOperationsIntf.class);
-			//HashMap<String,Serializable> parameters = orchestration.getParameters();
-
 			Thor.API.tcResultSet rs = lookupTypeService.getLookupValues("Lookup.TAD.AIX_UID");
 			int rowCount = rs.getTotalRowCount();
-			if (rowCount > 0) {
+			if (!aix_uid_submitted && rowCount > 0) {
 				rs.goToRow(0);
 				String value = rs.getStringValueFromColumn(3);
 				String newValue = ""+(Integer.parseInt(value) + 1);
 				Map<String,String> lookupValues = new HashMap<String,String>();
 				lookupValues.put("Lookup Definition.Lookup Code Information.Decode",newValue);
 				lookupTypeService.updateLookupValue("Lookup.TAD.AIX_UID", "COUNTER", lookupValues);
+				orchestration.addParameter("usr_aix_uid", value);
+			}	
+			if (!passwordSubmitted) {
 				char pwdArray[] = RandomPasswordGenerator.generatePswd(minLen, maxLen,
 	                    noOfCAPSAlpha, noOfDigits, noOfSplChars);
 				String encryptedPassword = CryptoUtil.getEncryptedPassword(pwdArray, null);
-				orchestration.addParameter("usr_aix_uid", value);
 				orchestration.addParameter("usr_aix_passwd", encryptedPassword);
 				orchestration.addParameter(UserManagerConstants.AttributeName.PASSWORD.getId(), encryptedPassword);
-			}	
+			}
 		} catch (tcAPIException e) {
 			e.printStackTrace();
-			//orchestration.addParameter("Middle Name", "ABC"+e.isMessage);
 		} catch (tcInvalidLookupException e) {
 			e.printStackTrace();
-			//orchestration.addParameter("Middle Name", "DEF");
 		} catch (tcColumnNotFoundException e) {
 			e.printStackTrace();
-			//orchestration.addParameter("Middle Name", "GHI");
 		} catch (tcInvalidValueException e) {
 			e.printStackTrace();
-			//orchestration.addParameter("Middle Name", "QPR");
 		} catch (tcInvalidAttributeException e) {
 			e.printStackTrace();
-			//orchestration.addParameter("Middle Name", "STU"+e.isMessage+"::"+e.getMessage());
 		} catch (Throwable e) {
 			e.printStackTrace();
-			//orchestration.addParameter("Middle Name", "XYZ"+e.getMessage());
 		}
 		return new EventResult();
 	}

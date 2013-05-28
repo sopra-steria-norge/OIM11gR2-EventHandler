@@ -1,0 +1,17 @@
+<scheduledTasks xmlns="http://xmlns.oracle.com/oim/scheduler">
+    <task>
+        <name>ChangeAIXPassword</name>
+        <class>no.steria.tad.AIXPwdChangerTask</class>
+        <description>Lists user provisioned to AIX-system and changes password for those. Exceptions is possible through lookup-table</description>
+        <retry>5</retry>
+        <parameters>
+        	<string-param required="false" helpText="LOOKUP_EXCLUSION_TABLE">LOOKUP_EXCLUSION_TABLE</string-param>
+        	<string-param required="false" helpText="ApplicationInstance">ApplicationInstance</string-param>
+            <number-param required="false" helpText="Minimum password length">MINIMUM_PASSWORD_LENGTH</number-param>
+            <number-param required="false" helpText="Maximum password length">MAXIMUM_PASSWORD_LENGTH</number-param>
+            <number-param required="false" helpText="Number of capatilized letters">NUMBER_OF_CAPS</number-param>
+            <number-param required="false" helpText="Number of alphanumerics">NUMBER_OF_NUMBERS</number-param>
+            <number-param required="false" helpText="Number of special characters">NUMBER_OF_SPECIAL_CHARS</number-param>
+        </parameters>
+    </task>
+</scheduledTasks>

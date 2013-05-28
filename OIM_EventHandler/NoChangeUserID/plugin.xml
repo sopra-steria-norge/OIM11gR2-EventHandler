@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oimplugins xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">  
+  <plugins pluginpoint="oracle.iam.platform.kernel.spi.EventHandler">
+    <plugin pluginclass= 
+        "no.steria.tad.NoChangeUserID"
+         version="1.0.0" 
+         name="NoChangeUserID">
+    </plugin>
+  </plugins>
+</oimplugins>
+

@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<eventhandlers xmlns="http://www.oracle.com/schema/oim/platform/kernel"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.oracle.com/schema/oim/platform/kernel
+  orchestration-handlers.xsd">
+    <preprocess-handler
+        class="no.steria.tad.NoChangeUserID"
+        entity-type="User"
+        operation="MODIFY"
+        name="NoChangeUserID"
+        order="1000"
+        stage="preprocess"
+        sync="TRUE">
+    </preprocess-handler>
+</eventhandlers>

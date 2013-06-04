@@ -2,8 +2,27 @@
 <oimplugins xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">  
 <plugins pluginpoint="oracle.iam.identity.usermgmt.api.UserNamePolicy">  
 <plugin 
-pluginclass="no.steria.tad.TadUsernamePolicy9" 
-version="1.9.3" name="TadUsernamePolicy9"/>
+pluginclass="no.steria.tad.TadUsernamePolicy" 
+version="2.0.0" name="TadUsernamePolicy"/>
 </plugins>  
+  <plugins pluginpoint="oracle.iam.platform.kernel.spi.EventHandler">
+    <plugin pluginclass= 
+        "no.steria.tad.ComputeUserID"
+         version="1.0.0" 
+         name="ComputeUserID">
+    </plugin>
+    <plugin pluginclass= 
+        "no.steria.tad.NoChangeUserID"
+         version="1.0.0" 
+         name="NoChangeUserID">
+    </plugin>
+  </plugins>
+  <plugins pluginpoint="oracle.iam.scheduler.vo.TaskSupport">
+    <plugin pluginclass= 
+        "no.steria.tad.AIXPwdChangerTask"
+         version="1.0.0" 
+         name="AIX_PWD_CHANGER">
+    </plugin>
+  </plugins>
 </oimplugins>
 

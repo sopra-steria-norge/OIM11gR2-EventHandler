@@ -2,18 +2,11 @@ package no.steria.tad;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import oracle.iam.identity.usermgmt.api.UserManager;
 import oracle.iam.identity.usermgmt.api.UserManagerConstants;
-import oracle.iam.identity.usermgmt.vo.User;
 import oracle.iam.platform.Platform;
 import oracle.iam.platform.context.ContextAware;
-import oracle.iam.platform.entitymgr.vo.SearchCriteria;
 import oracle.iam.platform.kernel.spi.PreProcessHandler;
 import oracle.iam.platform.kernel.vo.AbstractGenericOrchestration;
 import oracle.iam.platform.kernel.vo.BulkEventResult;
@@ -21,7 +14,6 @@ import oracle.iam.platform.kernel.vo.BulkOrchestration;
 import oracle.iam.platform.kernel.vo.EventResult;
 import oracle.iam.platform.kernel.vo.Orchestration;
 import oracle.iam.platform.utils.crypto.CryptoUtil;
-import oracle.iam.provisioning.vo.Account;
 import Thor.API.Exceptions.tcAPIException;
 import Thor.API.Exceptions.tcColumnNotFoundException;
 import Thor.API.Exceptions.tcInvalidAttributeException;
@@ -29,14 +21,7 @@ import Thor.API.Exceptions.tcInvalidLookupException;
 import Thor.API.Exceptions.tcInvalidValueException;
 import Thor.API.Operations.tcLookupOperationsIntf;
 
-public class ComputeUserID implements PreProcessHandler{
-	//Password characteristics
-    int noOfCAPSAlpha = 1;
-    int noOfDigits = 1;
-    int noOfSplChars = 0;
-    int minLen = 8;
-    int maxLen = 8;
-
+public class SetRegionField implements PreProcessHandler{
 	@Override
 	public void initialize(HashMap<String, String> arg0) {
 		// TODO Auto-generated method stub
@@ -61,38 +46,16 @@ public class ComputeUserID implements PreProcessHandler{
 	public EventResult execute(long processId, long eventId, Orchestration orchestration) {
 		try {
 			HashMap<String, ?> m = orchestration.getParameters();
-			boolean passwordSubmitted = m.containsKey("usr_aix_passwd");
-			boolean aix_uid_submitted = m.containsKey("usr_aix_uid");
-			if (!aix_uid_submitted) {
-				Set<String> attrNames = null;
-				UserManager umgr = Platform.getService(UserManager.class);
-				SearchCriteria criteria = new SearchCriteria(UserManagerConstants.AttributeName.USER_LOGIN.getId(), "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.", SearchCriteria.Operator.EQUAL);
-				attrNames = new HashSet<String>();
-				List<User> users = null;
-				users = umgr.search(criteria, attrNames, null);
-				if (users != null && !users.isEmpty() && users.size() == 1) {
-					User user = users.get(0);
-					int aix_uid = 7777;
-					try {
-						aix_uid = Integer.parseInt(user.getAttribute("usr_aix_uid").toString())+1;
-					}
-					catch(Throwable t) {
-						aix_uid = 8888;
-					}
-					user.setAttribute("usr_aix_uid", ""+aix_uid);
-					umgr.modify(user);
-					orchestration.addParameter("usr_aix_uid", ""+aix_uid);
-				}
+			boolean organisationChanged = m.containsKey(UserManagerConstants.AttributeName.LDAP_ORGANIZATION);
+			if (organisationChanged) {
+				String organisation = (String)m.get(UserManagerConstants.AttributeName.LDAP_ORGANIZATION);
+				tcLookupOperationsIntf lookupTypeService =  Platform.getService(tcLookupOperationsIntf.class);
+				String region = lookupTypeService.getDecodedValueForEncodedValue("Lookup.TAD.ORG_2_REGION", organisation);
+				orchestration.addParameter("usr_udf_tad_region", region);
 			}
-			if (!passwordSubmitted) {
-				char pwdArray[] = RandomPasswordGenerator.generatePswd(minLen, maxLen,
-	                    noOfCAPSAlpha, noOfDigits, noOfSplChars);
-				String encryptedPassword = CryptoUtil.getEncryptedPassword(pwdArray, null);
-				orchestration.addParameter("usr_aix_passwd", encryptedPassword);
-				//orchestration.addParameter(UserManagerConstants.AttributeName.PASSWORD.getId(), encryptedPassword);
-			}
-		} 
-		catch (Throwable e) {
+		}catch (tcAPIException e) {
+			e.printStackTrace();
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 		return new EventResult();

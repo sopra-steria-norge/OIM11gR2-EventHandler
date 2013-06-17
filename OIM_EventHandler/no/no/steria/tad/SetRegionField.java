@@ -2,6 +2,7 @@ package no.steria.tad;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import oracle.iam.identity.usermgmt.api.UserManagerConstants;
@@ -22,6 +23,8 @@ import Thor.API.Exceptions.tcInvalidValueException;
 import Thor.API.Operations.tcLookupOperationsIntf;
 
 public class SetRegionField implements PreProcessHandler{
+	public static final String LOOKUP_TABLE = "Lookup.TAD.ORG_2_REGION";
+	public static final String REGION_FIELD = "tad_region";
 	@Override
 	public void initialize(HashMap<String, String> arg0) {
 		// TODO Auto-generated method stub
@@ -45,18 +48,21 @@ public class SetRegionField implements PreProcessHandler{
 	@Override
 	public EventResult execute(long processId, long eventId, Orchestration orchestration) {
 		try {
+			System.err.println("EventResult*************************");
 			HashMap<String, ?> m = orchestration.getParameters();
-			boolean organisationChanged = m.containsKey(UserManagerConstants.AttributeName.LDAP_ORGANIZATION);
+			boolean organisationChanged = m.containsKey("act_key");
 			if (organisationChanged) {
-				String organisation = (String)m.get(UserManagerConstants.AttributeName.LDAP_ORGANIZATION);
+				Long organisation = (Long)m.get("act_key");
 				tcLookupOperationsIntf lookupTypeService =  Platform.getService(tcLookupOperationsIntf.class);
-				String region = lookupTypeService.getDecodedValueForEncodedValue("Lookup.TAD.ORG_2_REGION", organisation);
-				orchestration.addParameter("usr_udf_tad_region", region);
+				String region = lookupTypeService.getDecodedValueForEncodedValue(LOOKUP_TABLE, organisation.toString());
+				if (region == null || region.isEmpty())
+					region = organisation.toString();
+				orchestration.addParameter(REGION_FIELD, region);
 			}
 		}catch (tcAPIException e) {
-			e.printStackTrace();
+			orchestration.addParameter(REGION_FIELD, e.getMessage());
 		} catch (Throwable e) {
-			e.printStackTrace();
+			orchestration.addParameter(REGION_FIELD, e.getMessage());
 		}
 		return new EventResult();
 	}

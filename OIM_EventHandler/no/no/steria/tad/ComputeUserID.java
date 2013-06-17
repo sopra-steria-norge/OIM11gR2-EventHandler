@@ -30,12 +30,15 @@ import Thor.API.Exceptions.tcInvalidValueException;
 import Thor.API.Operations.tcLookupOperationsIntf;
 
 public class ComputeUserID implements PreProcessHandler{
+	public static final String AIX_UID = "usr_aix_uid";
+	public static final String AIX_PWD = "usr_aix_passwd";
+	public static final String UID_USER = "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.";
 	//Password characteristics
-    int noOfCAPSAlpha = 1;
-    int noOfDigits = 1;
-    int noOfSplChars = 0;
-    int minLen = 8;
-    int maxLen = 8;
+	int noOfCAPSAlpha = 1;
+	int noOfDigits = 1;
+	int noOfSplChars = 0;
+	int minLen = 8;
+	int maxLen = 8;
 
 	@Override
 	public void initialize(HashMap<String, String> arg0) {
@@ -61,39 +64,54 @@ public class ComputeUserID implements PreProcessHandler{
 	public EventResult execute(long processId, long eventId, Orchestration orchestration) {
 		try {
 			HashMap<String, ?> m = orchestration.getParameters();
-			boolean passwordSubmitted = m.containsKey("usr_aix_passwd");
-			boolean aix_uid_submitted = m.containsKey("usr_aix_uid");
+			boolean passwordSubmitted = m.containsKey(AIX_PWD);
+			boolean aix_uid_submitted = m.containsKey(AIX_UID);
 			if (!aix_uid_submitted) {
-				Set<String> attrNames = null;
-				UserManager umgr = Platform.getService(UserManager.class);
-				SearchCriteria criteria = new SearchCriteria(UserManagerConstants.AttributeName.USER_LOGIN.getId(), "GENERERT BRUKERNAVN IKKE PASSENDE. SKRIV INN MANUELT.", SearchCriteria.Operator.EQUAL);
-				attrNames = new HashSet<String>();
-				List<User> users = null;
-				users = umgr.search(criteria, attrNames, null);
-				if (users != null && !users.isEmpty() && users.size() == 1) {
-					User user = users.get(0);
-					int aix_uid = 7777;
-					try {
-						aix_uid = Integer.parseInt(user.getAttribute("usr_aix_uid").toString())+1;
+				Long organisation = (Long)m.get("act_key");
+				tcLookupOperationsIntf lookupTypeService =  Platform.getService(tcLookupOperationsIntf.class);
+				String region = lookupTypeService.getDecodedValueForEncodedValue("Lookup.TAD.AIX_UID_EnabledOrg", organisation.toString());
+				if (region != null && !region.isEmpty()) {
+					Set<String> attrNames = null;
+					UserManager umgr = Platform.getService(UserManager.class);
+					SearchCriteria criteria = new SearchCriteria(UserManagerConstants.AttributeName.USER_LOGIN.getId(), UID_USER, SearchCriteria.Operator.EQUAL);
+					attrNames = new HashSet<String>();
+					List<User> users = null;
+					users = umgr.search(criteria, attrNames, null);
+					if (users != null && !users.isEmpty() && users.size() == 1) {
+						User user = users.get(0);
+						HashMap<String, Object> attrMap = new HashMap<String, Object>();
+					    try {
+							int aix_uid = 7777;
+							try {
+								aix_uid = Integer.parseInt(user.getAttribute(AIX_UID).toString())+1;
+							}
+							catch(Throwable t) {
+								aix_uid = 8888;
+							}
+					    	attrMap.put(AIX_UID, ""+aix_uid);
+					    	User modifyUser = new User(user.getId(),attrMap);
+					    	umgr.modify(UserManagerConstants.AttributeName.USER_LOGIN.getId(), user.getLogin(), modifyUser);
+					    	orchestration.addParameter(AIX_UID, ""+aix_uid);
+						}
+						catch(Throwable t) {
+							throw new RuntimeException(t.getMessage());
+					    	//orchestration.addParameter(UserManagerConstants.AttributeName.MIDDLENAME.getId(), t.getMessage());
+						}
 					}
-					catch(Throwable t) {
-						aix_uid = 8888;
-					}
-					user.setAttribute("usr_aix_uid", ""+aix_uid);
-					umgr.modify(user);
-					orchestration.addParameter("usr_aix_uid", ""+aix_uid);
 				}
 			}
 			if (!passwordSubmitted) {
 				char pwdArray[] = RandomPasswordGenerator.generatePswd(minLen, maxLen,
-	                    noOfCAPSAlpha, noOfDigits, noOfSplChars);
+						noOfCAPSAlpha, noOfDigits, noOfSplChars);
 				String encryptedPassword = CryptoUtil.getEncryptedPassword(pwdArray, null);
-				orchestration.addParameter("usr_aix_passwd", encryptedPassword);
+				orchestration.addParameter(AIX_PWD, encryptedPassword);
 				//orchestration.addParameter(UserManagerConstants.AttributeName.PASSWORD.getId(), encryptedPassword);
 			}
 		} 
 		catch (Throwable e) {
-			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+			//orchestration.addParameter(UserManagerConstants.AttributeName.MIDDLENAME.getId(),e.getMessage());
+			//e.printStackTrace();
 		}
 		return new EventResult();
 	}

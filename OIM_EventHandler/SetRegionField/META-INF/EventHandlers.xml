@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.oracle.com/schema/oim/platform/kernel
   orchestration-handlers.xsd">
     <preprocess-handler
-        class="SetRegionField"
+        class="no.steria.tad.SetRegionField"
         entity-type="User"
         operation="CREATE"
         name="Set Region-field based on organisation"
@@ -13,7 +13,7 @@
         sync="TRUE">
     </preprocess-handler>
     <preprocess-handler
-        class="SetRegionField"
+        class="no.steria.tad.SetRegionField"
         entity-type="User"
         operation="MODIFY"
         name="Set Region-field based on organisation"

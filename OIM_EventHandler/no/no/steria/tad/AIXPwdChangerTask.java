@@ -104,7 +104,7 @@ public class AIXPwdChangerTask extends oracle.iam.scheduler.vo.TaskSupport {
 						while (i.hasNext()) {
 							a = i.next();
 							String accountStatus = a.getAccountStatus();
-							if (!accountStatus.equals("Provisioning") && !accountStatus.equals("Revoked") && accountStatus.equals("Disabled")) {
+							if (!accountStatus.equals("Provisioning") && !accountStatus.equals("Revoked") && !accountStatus.equals("Disabled")) {
 								String OIU_KEY = a.getAccountID();				
 								char pwdArray[] = RandomPasswordGenerator.generatePswd(((Long)parameters.get("MINIMUM_PASSWORD_LENGTH")).intValue(), ((Long)parameters.get("MAXIMUM_PASSWORD_LENGTH")).intValue(),
 										((Long)parameters.get("NUMBER_OF_CAPS")).intValue(), ((Long)parameters.get("NUMBER_OF_NUMBERS")).intValue(), ((Long)parameters.get("NUMBER_OF_SPECIAL_CHARS")).intValue());

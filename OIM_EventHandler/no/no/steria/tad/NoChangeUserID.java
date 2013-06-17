@@ -48,36 +48,39 @@ public class NoChangeUserID implements PreProcessHandler{
 		oracle.iam.identity.usermgmt.vo.User user = (oracle.iam.identity.usermgmt.vo.User)orchestration.getInterEventData().get("CURRENT_USER");
 		HashMap<String, ?> m = orchestration.getParameters();
 		if (true) {
-			ApplicationInstanceService applicationInstanceService = Platform.getService(ApplicationInstanceService.class);
-			ApplicationInstance applicationInstance = null;
-			try {
-				applicationInstance = applicationInstanceService.findApplicationInstanceByName("Active Directory");
-			} catch (ApplicationInstanceNotFoundException e) {
-				throw new RuntimeException("Fant ikke Applikasjonsinstans");
-			} catch (GenericAppInstanceServiceException e) {
-				throw new RuntimeException("Fant ikke Applikasjonsinstans");
-			}
-			ProvisioningService provisioningService = Platform.getService(ProvisioningService.class);
-			List<Account> l = null;
-			try {
-				l = provisioningService.getUserAccountDetailsInApplicationInstance(user.getId(), applicationInstance.getApplicationInstanceKey());
-			} catch (AccessDeniedException e) {
-				throw new RuntimeException("Ingen tilgang til Applikasjonsinstans");
-			} catch (UserNotFoundException e) {
-				throw new RuntimeException("Bruker ikke funnet. : "+user.getId());
-			} catch (ApplicationInstanceNotFoundException e) {
-				throw new RuntimeException("Fant ikke Applikasjonsinstansen ved brukersøk");
-			} catch (GenericProvisioningException e) {
-				throw new RuntimeException("GenericProvisioningException");
-			}
-			if (l != null) {
-				Iterator<Account> i = l.iterator();
-				Account a = null;
-				while (i.hasNext()) {
-					a = i.next();
-					String accountStatus = a.getAccountStatus();
-					if (accountStatus.equals("Provisioned") || accountStatus.equals("Enabled")) {
-						throw new RuntimeException("Ikke lov å endre brukernavn etter at bruker er provisjonert mot AD"+accountStatus);
+			if (m.containsKey(UserManagerConstants.AttributeName.USER_LOGIN.getId())) {
+				ApplicationInstanceService applicationInstanceService = Platform.getService(ApplicationInstanceService.class);
+				ApplicationInstance applicationInstance = null;
+				try {
+					applicationInstance = applicationInstanceService.findApplicationInstanceByName("Auto Generated Application Instance for Resource: AD User and IT Resource: Active Directory");
+					//applicationInstance = applicationInstanceService.findApplicationInstanceByName("ActiveDirectory");
+				} catch (ApplicationInstanceNotFoundException e) {
+					throw new RuntimeException("Fant ikke Applikasjonsinstans");
+				} catch (GenericAppInstanceServiceException e) {
+					throw new RuntimeException("Fant ikke Applikasjonsinstans");
+				}
+				ProvisioningService provisioningService = Platform.getService(ProvisioningService.class);
+				List<Account> l = null;
+				try {
+					l = provisioningService.getUserAccountDetailsInApplicationInstance(user.getId(), applicationInstance.getApplicationInstanceKey());
+				} catch (AccessDeniedException e) {
+					throw new RuntimeException("Ingen tilgang til Applikasjonsinstans");
+				} catch (UserNotFoundException e) {
+					throw new RuntimeException("Bruker ikke funnet. : "+user.getId());
+				} catch (ApplicationInstanceNotFoundException e) {
+					throw new RuntimeException("Fant ikke Applikasjonsinstansen ved brukersøk");
+				} catch (GenericProvisioningException e) {
+					throw new RuntimeException("GenericProvisioningException");
+				}
+				if (l != null) {
+					Iterator<Account> i = l.iterator();
+					Account a = null;
+					while (i.hasNext()) {
+						a = i.next();
+						String accountStatus = a.getAccountStatus();
+						if (accountStatus.equals("Provisioned") || accountStatus.equals("Enabled")) {
+							throw new RuntimeException("Ikke lov å endre brukernavn etter at bruker er provisjonert mot AD"+accountStatus);
+						}
 					}
 				}
 			}

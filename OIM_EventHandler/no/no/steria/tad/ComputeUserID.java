@@ -3,9 +3,7 @@ package no.steria.tad;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import oracle.iam.identity.usermgmt.api.UserManager;
@@ -21,12 +19,6 @@ import oracle.iam.platform.kernel.vo.BulkOrchestration;
 import oracle.iam.platform.kernel.vo.EventResult;
 import oracle.iam.platform.kernel.vo.Orchestration;
 import oracle.iam.platform.utils.crypto.CryptoUtil;
-import oracle.iam.provisioning.vo.Account;
-import Thor.API.Exceptions.tcAPIException;
-import Thor.API.Exceptions.tcColumnNotFoundException;
-import Thor.API.Exceptions.tcInvalidAttributeException;
-import Thor.API.Exceptions.tcInvalidLookupException;
-import Thor.API.Exceptions.tcInvalidValueException;
 import Thor.API.Operations.tcLookupOperationsIntf;
 
 public class ComputeUserID implements PreProcessHandler{

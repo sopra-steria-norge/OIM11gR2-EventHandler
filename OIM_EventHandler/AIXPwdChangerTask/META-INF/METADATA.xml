@@ -12,6 +12,7 @@
             <number-param required="false" helpText="Number of capatilized letters">NUMBER_OF_CAPS</number-param>
             <number-param required="false" helpText="Number of alphanumerics">NUMBER_OF_NUMBERS</number-param>
             <number-param required="false" helpText="Number of special characters">NUMBER_OF_SPECIAL_CHARS</number-param>
+            <string-param required="false" helpText="LogFile">LogFile</string-param>
         </parameters>
     </task>
 </scheduledTasks>

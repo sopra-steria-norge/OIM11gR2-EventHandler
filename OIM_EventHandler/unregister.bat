@@ -1,1 +1,0 @@
-%JAVA_HOME%\bin\java.exe -cp bin;lib\wlfullclient.jar;lib\oimclient.jar;lib\spring.jar;lib\log4j-1.2.8.jar;lib\commons-logging.jar no.steria.tad.PluginDeploy unregister 192.168.137.100 SetRandomOIMPassword 1.0.0 xelsysadm Steria2012

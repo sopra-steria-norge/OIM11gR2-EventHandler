@@ -1,0 +1,18 @@
+<scheduledTasks xmlns="http://xmlns.oracle.com/oim/scheduler">
+    <task>
+        <name>ChangeAIXPwdOnSelectedUsers</name>
+        <class>no.steria.tad.ChangeAIXPwdOnSelectedUsers</class>
+        <description>Uses a file to lookup user provisioned to AIX-system and changes password for those</description>
+        <retry>5</retry>
+        <parameters>
+        	<string-param required="false" helpText="ApplicationInstance">ApplicationInstance</string-param>
+            <number-param required="false" helpText="Minimum password length">Minimum password length</number-param>
+            <number-param required="false" helpText="Maximum password length">Maximum password length</number-param>
+            <number-param required="false" helpText="Number of capatilized letters">Number of caps</number-param>
+            <number-param required="false" helpText="Number of alphanumerics">Number of numbers</number-param>
+            <number-param required="false" helpText="Number of special characters">Number of special chars</number-param>
+            <string-param required="false" helpText="UserFile">UserFile</string-param>
+            <string-param required="false" helpText="LogFile">LogFile</string-param>
+        </parameters>
+    </task>
+</scheduledTasks>

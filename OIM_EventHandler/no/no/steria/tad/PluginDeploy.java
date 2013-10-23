@@ -20,7 +20,6 @@ public class PluginDeploy {
 		env.put(OIMClient.JAVA_NAMING_FACTORY_INITIAL, OIMInitialContextFactory);
 		env.put(OIMClient.JAVA_NAMING_PROVIDER_URL, OIMURL);
 		client = new OIMClient(env);
-		System.out.println(username+':'+password);
 		client.login(username, password.toCharArray());
 	}
 
@@ -57,11 +56,10 @@ public class PluginDeploy {
 		else {
 			String className = args[2];
 			String version = args[3];
-			System.out.println(className);
-			System.out.println(version);
+			System.out.println(className+':'+version);
 			//System.exit(0);
 			service.unRegisterPlugin(className,version);
-			System.out.println(version);
+			System.out.println(className+':'+version+":Uninstalled");
 		}
 	}
 }

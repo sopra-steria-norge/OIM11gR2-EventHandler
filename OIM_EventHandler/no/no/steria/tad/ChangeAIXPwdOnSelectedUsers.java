@@ -1,5 +1,7 @@
 package no.steria.tad;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,13 +24,18 @@ import oracle.iam.provisioning.vo.Account;
 import oracle.iam.provisioning.vo.ApplicationInstance;
 import oracle.iam.identity.usermgmt.vo.User;
 
-public class AIXPwdChangerTask extends oracle.iam.scheduler.vo.TaskSupport {
+public class ChangeAIXPwdOnSelectedUsers extends oracle.iam.scheduler.vo.TaskSupport {
 	OIMClient client = null;
-	public AIXPwdChangerTask() {
+	public static final String NOT_FOUND = "Not found";
+	public static final String NOT_PROVISIONED = "Not provisioned";
+	public static final String FAILED = "Failed";
+	public static final String OK = "Ok";
+	
+	public ChangeAIXPwdOnSelectedUsers() {
 		client = new OIMClient();		
 	}
 
-	public AIXPwdChangerTask(Hashtable env,String username,String password) throws Exception {
+	public ChangeAIXPwdOnSelectedUsers(Hashtable env,String username,String password) throws Exception {
 		client = new OIMClient(env);
 		client.login(username, password.toCharArray());
 	}
@@ -47,20 +54,20 @@ public class AIXPwdChangerTask extends oracle.iam.scheduler.vo.TaskSupport {
 	public static void main(String args[]) {
 		HashMap<String, Object> parameters = new HashMap<String,Object>();
 		try {
-			parameters.put("MINIMUM_PASSWORD_LENGTH",new Long(6));
-			parameters.put("MAXIMUM_PASSWORD_LENGTH",new Long(6));
-			parameters.put("NUMBER_OF_CAPS",new Long(1));
-			parameters.put("NUMBER_OF_NUMBERS",new Long(1));
-			parameters.put("NUMBER_OF_SPECIAL_CHARS", new Long(1));
+			parameters.put("Minimum password length",new Long(6));
+			parameters.put("Maximum password length",new Long(6));
+			parameters.put("Number of caps",new Long(1));
+			parameters.put("Number of numbers",new Long(1));
+			parameters.put("Number of special chars", new Long(1));
 			parameters.put("ApplicationInstance","Linux");
-			parameters.put("LOOKUP_EXCLUSION_TABLE", "Lookup.TAD.PWD_RESET_EXCLUSIONS");
-			parameters.put("LogFile", "c:\\log\\logFile.log");
+			parameters.put("UserFile", "c:\\log\\fileOfUsers.txt");
+			parameters.put("LogFile", "c:\\log\\Logfile.log");
 
 			String username  = "xelsysadm";
 			String password = "Steria2012";
 			String OIMSERVER = "192.168.137.100";
 			Hashtable<String, String> env = loginWithCustomEnv("t3://"+OIMSERVER+":14000",username,password);
-			new AIXPwdChangerTask(env,username,password).execute(parameters);
+			new ChangeAIXPwdOnSelectedUsers(env,username,password).execute(parameters);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -70,41 +77,30 @@ public class AIXPwdChangerTask extends oracle.iam.scheduler.vo.TaskSupport {
 	@Override
 	public void execute(HashMap parameters) throws Exception {
 		//OIMClient client = new OIMClient();		
+		String status = OK;
+		String filename = (String)parameters.get("UserFile");
 		String logFilename = (String)parameters.get("LogFile");
+		BufferedReader br = new BufferedReader(new FileReader(filename));
 		FileWriter logWriter = new FileWriter(logFilename);
-
-		HashMap<String,Object> exclusions = new HashMap<String, Object>();
-		tcLookupOperationsIntf lookupTypeService = client.getService(tcLookupOperationsIntf.class);
-		Thor.API.tcResultSet rs = lookupTypeService.getLookupValues((String)parameters.get("LOOKUP_EXCLUSION_TABLE"));
-		int rowCount = rs.getTotalRowCount();
-		for (int i = 0;i < rowCount;i++) {
-			rs.goToRow(i);
-			exclusions.put(rs.getStringValueFromColumn(3),rs.getStringValueFromColumn(2));
-		}
-
-		UserManager umgr = client.getService(UserManager.class);
-		List<User> users = null;
-		Set<String> attrNames = null;
-
-		SearchCriteria criteria = null;
-
+		String line = null;
 		ApplicationInstanceService applicationInstanceService = client.getService(ApplicationInstanceService.class);
 		ApplicationInstance applicationInstance = applicationInstanceService.findApplicationInstanceByName(parameters.get("ApplicationInstance").toString());
 
 		ProvisioningService provisioningService = client.getService(ProvisioningService.class);
-
-		//criteria = new SearchCriteria("usr_key", "*", SearchCriteria.Operator.EQUAL);
-		criteria = new SearchCriteria(UserManagerConstants.AttributeName.USER_LOGIN.getId(), "*", SearchCriteria.Operator.EQUAL);
+		SearchCriteria criteria = null;
+		UserManager umgr = client.getService(UserManager.class);
+		List<User> users = null;
+		Set<String> attrNames = null;
 		attrNames = new HashSet<String>();
-		//attrNames.add("User Login");
-
-		users = umgr.search(criteria, attrNames, parameters);
-		if (users != null && !users.isEmpty()) {
-			for (User user : users) {
-				try {
-					if (!exclusions.containsKey(user.getLogin())){
+		while ((line = br.readLine()) != null) {
+			status = OK;
+			try {
+				criteria = new SearchCriteria(UserManagerConstants.AttributeName.USER_LOGIN.getId(), line, SearchCriteria.Operator.EQUAL);
+				users = umgr.search(criteria, attrNames, parameters);
+				if (users != null && !users.isEmpty()) {
+					for (User user : users) {
 						List<Account> l = provisioningService.getUserAccountDetailsInApplicationInstance(user.getId(), applicationInstance.getApplicationInstanceKey());
-						if (l != null && !l.isEmpty()) {
+						if (l != null) {
 							Iterator<Account> i = l.iterator();
 							Account a = null;
 							while (i.hasNext()) {
@@ -112,25 +108,37 @@ public class AIXPwdChangerTask extends oracle.iam.scheduler.vo.TaskSupport {
 								String accountStatus = a.getAccountStatus();
 								if (!accountStatus.equals("Provisioning") && !accountStatus.equals("Revoked") && !accountStatus.equals("Disabled")) {
 									String OIU_KEY = a.getAccountID();				
-									char pwdArray[] = RandomPasswordGenerator.generatePswd(((Long)parameters.get("MINIMUM_PASSWORD_LENGTH")).intValue(), ((Long)parameters.get("MAXIMUM_PASSWORD_LENGTH")).intValue(),
-											((Long)parameters.get("NUMBER_OF_CAPS")).intValue(), ((Long)parameters.get("NUMBER_OF_NUMBERS")).intValue(), ((Long)parameters.get("NUMBER_OF_SPECIAL_CHARS")).intValue());
+									char pwdArray[] = RandomPasswordGenerator.generatePswd(((Long)parameters.get("Minimum password length")).intValue(), ((Long)parameters.get("Maximum password length")).intValue(),
+											((Long)parameters.get("Number of caps")).intValue(), ((Long)parameters.get("Number of numbers")).intValue(), ((Long)parameters.get("Number of special chars")).intValue());
 									provisioningService.changeAccountPassword(Long.parseLong(OIU_KEY), pwdArray);
-									logWriter.write(user.getLogin() + " - OK\n");
+									status = OK;
 								}
-								/*
 								else {
-									logWriter.write(user.getLogin() + " - not provisioned\n");
+									status = NOT_PROVISIONED;
 								}
-								*/
 							}
+						}
+						else {
+							status = NOT_PROVISIONED;
 						}
 					}
 				}
-				catch (Throwable t) {
-					logWriter.write(user.getLogin() + " - FAILED - "+t.getMessage()+"\n");
+				else {
+					status = NOT_FOUND;
 				}
-				finally {
-					logWriter.flush();
+			}
+			catch (Throwable t) {
+				status = FAILED + " - " + t.getMessage();
+			}
+			finally {
+				try {
+					if (status != NOT_PROVISIONED) {
+						logWriter.write(line + " - " + status + "\n");
+						logWriter.flush();
+					}
+				}
+				catch(Throwable t){
+					t.printStackTrace();
 				}
 			}
 		}

@@ -12,17 +12,15 @@ import java.util.Set;
 
 import javax.security.auth.login.LoginException;
 
-import Thor.API.Operations.tcLookupOperationsIntf;
-
 import oracle.iam.identity.usermgmt.api.UserManager;
 import oracle.iam.identity.usermgmt.api.UserManagerConstants;
+import oracle.iam.identity.usermgmt.vo.User;
 import oracle.iam.platform.OIMClient;
 import oracle.iam.platform.entitymgr.vo.SearchCriteria;
 import oracle.iam.provisioning.api.ApplicationInstanceService;
 import oracle.iam.provisioning.api.ProvisioningService;
 import oracle.iam.provisioning.vo.Account;
 import oracle.iam.provisioning.vo.ApplicationInstance;
-import oracle.iam.identity.usermgmt.vo.User;
 
 public class ChangeAIXPwdOnSelectedUsers extends oracle.iam.scheduler.vo.TaskSupport {
 	OIMClient client = null;
@@ -139,6 +137,14 @@ public class ChangeAIXPwdOnSelectedUsers extends oracle.iam.scheduler.vo.TaskSup
 				}
 				catch(Throwable t){
 					t.printStackTrace();
+				}
+				finally {
+					if (isStop()) {
+						logWriter.write("Task is stopping");
+						logWriter.flush();
+						logWriter.close();
+						return;
+					}
 				}
 			}
 		}

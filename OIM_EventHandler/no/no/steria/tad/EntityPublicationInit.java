@@ -4,19 +4,26 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
 import oracle.iam.platform.OIMClient;
+import oracle.iam.platform.authopss.api.PolicyConstants.Resources;
 import oracle.iam.platform.authopss.exception.AccessDeniedException;
+import oracle.iam.platform.authopss.vo.EntityPublication;
 import oracle.iam.platform.entitymgr.vo.SearchCriteria;
+import oracle.iam.platformservice.api.EntityPublicationService;
 import oracle.iam.provisioning.api.EntitlementService;
 import oracle.iam.provisioning.exception.GenericEntitlementServiceException;
 import oracle.iam.provisioning.vo.Entitlement;
 
-public class UpdateEntitlements {
+public class EntityPublicationInit {
 	public static OIMClient client;
 	private static String OIMInitialContextFactory = "weblogic.jndi.WLInitialContextFactory";
 	private static HashMap<String,Object> configParams = new HashMap<String,Object>();
@@ -36,7 +43,7 @@ public class UpdateEntitlements {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 4) {
-			System.err.println("java UpdateEntitlements <OIM_SERVER> <CSV-file> <username> <password> [<delimiter>]");
+			System.err.println("java EntityPublicationInit <OIM_SERVER> <CSV-file> <username> <password> [<delimiter>]");
 			System.exit(1);
 		}
 		String username  = args[2];
@@ -44,7 +51,7 @@ public class UpdateEntitlements {
 		String OIMSERVER = args[0];
 
 		loginWithCustomEnv("t3://"+OIMSERVER+":14000",username,password);
-		UpdateEntitlements readCSV = new UpdateEntitlements();
+		EntityPublicationInit readCSV = new EntityPublicationInit();
 		readCSV.csvFile = args[1];
 		if (args.length == 5)
 			readCSV.delimiter = args[4];
@@ -52,10 +59,9 @@ public class UpdateEntitlements {
 	}
 	public void run() {
 		EntitlementService service = client.getService(EntitlementService.class);
-
+		EntityPublicationService publicationService = client.getService(EntityPublicationService.class);
 		BufferedReader br = null;
 		String line = "";
-
 		try {
 			br = new BufferedReader(new FileReader(this.csvFile));
 			SearchCriteria criteria = null;
@@ -70,9 +76,7 @@ public class UpdateEntitlements {
 					}
 					try {
 						e = list.get(0);
-						e.setDescription(entitlement[1]);
-						service.updateEntitlement(e);
-						System.out.println(entitlement[0] + " updated OK");
+						updatePublication(publicationService,e,entitlement[1]);
 					}
 					catch(Throwable t) {
 						System.err.println("Error : Exception updating : "+ entitlement[0]);
@@ -102,5 +106,22 @@ public class UpdateEntitlements {
 			client.logout();
 		}
 		System.out.println("Done");
+	}
+	
+	private static Map HASHMAP = new HashMap();
+	
+	private void updatePublication(EntityPublicationService publicationService, Entitlement e, String organisation) {
+		System.out.println("UpdatePublication : "+e.getEntitlementKey());
+		java.util.List<EntityPublication> publicationList = publicationService.listEntityPublications(Resources.IT_RESOURCE_ENTITLEMENT, ""+e.getEntitlementKey(), HASHMAP);
+		publicationService.removeEntityPublications(publicationList);
+		List<EntityPublication> l = new ArrayList<EntityPublication>();
+		EntityPublication ep = new EntityPublication();
+		ep.setEntityIdAsLong(new Long(e.getEntitlementKey()));
+		ep.setEntityType("Entitlement");
+		ep.setScopeType("Company");
+		ep.setRootScopeId(organisation);
+		ep.setScopeId(organisation);
+		l.add(ep);
+		publicationService.addEntityPublications(l);
 	}
 }

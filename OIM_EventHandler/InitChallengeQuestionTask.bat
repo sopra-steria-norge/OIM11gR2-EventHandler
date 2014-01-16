@@ -1,0 +1,1 @@
+%JAVA_HOME%\bin\java.exe -cp InitChallengeQuestionTask.jar;lib\oimclient.jar;lib\spring.jar;lib\log4j-1.2.8.jar;lib\commons-logging.jar;lib\jrf-api.jar;lib\wlfullclient.jar no.steria.tad.InitChallengeQuestionTask %1 %2 %3 %4 %5

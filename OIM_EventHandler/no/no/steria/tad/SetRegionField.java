@@ -1,25 +1,15 @@
 package no.steria.tad;
 
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
-import oracle.iam.identity.usermgmt.api.UserManagerConstants;
 import oracle.iam.platform.Platform;
-import oracle.iam.platform.context.ContextAware;
 import oracle.iam.platform.kernel.spi.PreProcessHandler;
 import oracle.iam.platform.kernel.vo.AbstractGenericOrchestration;
 import oracle.iam.platform.kernel.vo.BulkEventResult;
 import oracle.iam.platform.kernel.vo.BulkOrchestration;
 import oracle.iam.platform.kernel.vo.EventResult;
 import oracle.iam.platform.kernel.vo.Orchestration;
-import oracle.iam.platform.utils.crypto.CryptoUtil;
 import Thor.API.Exceptions.tcAPIException;
-import Thor.API.Exceptions.tcColumnNotFoundException;
-import Thor.API.Exceptions.tcInvalidAttributeException;
-import Thor.API.Exceptions.tcInvalidLookupException;
-import Thor.API.Exceptions.tcInvalidValueException;
 import Thor.API.Operations.tcLookupOperationsIntf;
 
 public class SetRegionField implements PreProcessHandler{
@@ -70,10 +60,5 @@ public class SetRegionField implements PreProcessHandler{
 	public BulkEventResult execute(long arg0, long arg1, BulkOrchestration arg2) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	private String getParameterValue(HashMap<String,Serializable> parameters,String key) {
-		String value = (String) ((parameters.get(key) instanceof ContextAware) ? ((ContextAware)parameters.get(key)).getObjectValue() : (String) parameters.get(key));
-		return value;
 	}
 }

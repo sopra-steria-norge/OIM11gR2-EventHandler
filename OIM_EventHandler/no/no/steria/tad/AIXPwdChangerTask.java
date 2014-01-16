@@ -131,6 +131,12 @@ public class AIXPwdChangerTask extends oracle.iam.scheduler.vo.TaskSupport {
 				}
 				finally {
 					logWriter.flush();
+					if (isStop()) {
+						logWriter.write("Task is stopping");
+						logWriter.flush();
+						logWriter.close();
+						return;
+					}
 				}
 			}
 		}

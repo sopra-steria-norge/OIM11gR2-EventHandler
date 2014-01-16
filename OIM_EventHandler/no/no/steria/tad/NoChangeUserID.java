@@ -2,16 +2,12 @@ package no.steria.tad;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import oracle.iam.identity.usermgmt.api.UserManager;
 import oracle.iam.identity.usermgmt.api.UserManagerConstants;
-import oracle.iam.identity.usermgmt.vo.User;
+import oracle.iam.platform.Platform;
 import oracle.iam.platform.authopss.exception.AccessDeniedException;
-import oracle.iam.platform.entitymgr.vo.SearchCriteria;
 import oracle.iam.platform.kernel.spi.PreProcessHandler;
 import oracle.iam.platform.kernel.vo.AbstractGenericOrchestration;
 import oracle.iam.platform.kernel.vo.BulkEventResult;
@@ -26,7 +22,6 @@ import oracle.iam.provisioning.exception.GenericProvisioningException;
 import oracle.iam.provisioning.exception.UserNotFoundException;
 import oracle.iam.provisioning.vo.Account;
 import oracle.iam.provisioning.vo.ApplicationInstance;
-import oracle.iam.platform.Platform;
 
 public class NoChangeUserID implements PreProcessHandler{
 	@Override

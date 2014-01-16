@@ -1,6 +1,5 @@
 package no.steria.tad;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +9,6 @@ import oracle.iam.identity.usermgmt.api.UserManager;
 import oracle.iam.identity.usermgmt.api.UserManagerConstants;
 import oracle.iam.identity.usermgmt.vo.User;
 import oracle.iam.platform.Platform;
-import oracle.iam.platform.context.ContextAware;
 import oracle.iam.platform.entitymgr.vo.SearchCriteria;
 import oracle.iam.platform.kernel.spi.PreProcessHandler;
 import oracle.iam.platform.kernel.vo.AbstractGenericOrchestration;
@@ -51,7 +49,7 @@ public class ComputeUserID implements PreProcessHandler{
 		// TODO Auto-generated method stub
 
 	}
-	@SuppressWarnings("deprecation")
+
 	@Override
 	public EventResult execute(long processId, long eventId, Orchestration orchestration) {
 		try {
@@ -113,8 +111,10 @@ public class ComputeUserID implements PreProcessHandler{
 		return null;
 	}
 
+	/*
 	private String getParameterValue(HashMap<String,Serializable> parameters,String key) {
 		String value = (String) ((parameters.get(key) instanceof ContextAware) ? ((ContextAware)parameters.get(key)).getObjectValue() : (String) parameters.get(key));
 		return value;
 	}
+	*/
 }
